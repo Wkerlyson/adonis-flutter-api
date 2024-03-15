@@ -7,7 +7,6 @@ export default class Cliente extends BaseModel {
 
   @column()
   declare userId: number
-
   
   @column()
   declare nome: string
