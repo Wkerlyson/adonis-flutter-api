@@ -1,3 +1,6 @@
+import Admin from '#models/admin'
+import Cliente from '#models/cliente'
+import Estabelecimento from '#models/estabelecimento'
 import User from '#models/user'
 import type { HttpContext } from '@adonisjs/core/http'
 
@@ -38,5 +41,47 @@ export default class AuthController {
         await User.accessTokens.delete(await auth.authenticate(), identifier)
        
         return response.ok('logout success')
+    }
+
+    public async me({auth, response}: HttpContext){
+
+        const userAuth = auth.user
+        let data
+
+        switch (userAuth?.tipo) {
+            case 'clientes':
+                const cliente = await Cliente.findByOrFail('userId', userAuth.id)
+                data = {
+                    id_cliente: cliente.id,
+                    nome: cliente.nome,
+                    telefone: cliente.telefone,
+                    email: userAuth.email
+                }
+            break;
+            case 'estabelecimentos':
+                const estabelecimento = await Estabelecimento.findByOrFail('userId', userAuth.id)
+                data = {
+                    id_estabelecimento: estabelecimento.id,
+                    nome: estabelecimento.nome,
+                    logo: estabelecimento.logo,
+                    online: estabelecimento.online,
+                    bloqueado: estabelecimento.bloqueado,
+                    email: userAuth.email
+                }
+            break;
+            case 'admins':
+                const admin = await Admin.findByOrFail('userId', userAuth.id)
+                data = {
+                    id_admin: admin.id,
+                    nome: admin.nome,
+                    email: userAuth.email
+                }
+            break;
+            default:
+                return response.unauthorized('unauthorized user - type not found')
+            break;
+        }
+
+        return response.ok(data)
     }
 }
