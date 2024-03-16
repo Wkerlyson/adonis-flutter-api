@@ -29,9 +29,14 @@ export default class AuthController {
        })
 
        return {
-        type: 'bearer',
-        value: token.value!.release(),
+        token
       }
+    }
 
+    public async logout({response, auth}: HttpContext){
+        const identifier = (await auth.authenticate()).currentAccessToken.identifier
+        await User.accessTokens.delete(await auth.authenticate(), identifier)
+       
+        return response.ok('logout success')
     }
 }
